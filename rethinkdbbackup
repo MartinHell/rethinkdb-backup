@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# RethinkDB Backup Script Ver 1.0
+# RethinkDB Backup Script Ver 1.1
 # https://github.com/MartinHell/rethinkdb-backup
 #
 # http://autopgsqlbackup.frozenpc.net
@@ -55,6 +55,16 @@ MAXATTSIZE="4000"
 
 # Email Address to send mail to? (user@domain.com)
 MAILADDR="root@localhost"
+
+# Email Address to send mail from? Only used for mailgun emails
+FROMMAILADDR=""
+
+# Use MailGun for sending emails https://mailgun.com
+MAILGUN=yes
+
+# Set MailGun API KEY
+MAILGUNAPIKEY=""
+
 
 # ============================================================
 # === ADVANCED OPTIONS ( Read the doc's below for details )===
@@ -143,6 +153,9 @@ DOWEEKLY=6
 # Change Log
 #=====================================================================
 #
+# VER 1.1 - (2016-08-02)
+# Adds support for using mailgun to send emails
+#
 # VER 1.0 - (2016-08-02)
 # Initial Release - based on Autopgsqlbackup 1.0
 #
@@ -160,7 +173,7 @@ DNOW=`date +%u`					# Day number of the week 1 to 7 where 1 represents Monday
 DOM=`date +%d`					# Date of the Month e.g. 27
 M=`date +%B`					# Month e.g January
 W=`date +%V`					# Week Number e.g 37
-VER=1.0						# Version Number
+VER=1.1						# Version Number
 LOGFILE=$BACKUPDIR/$DBHOST-`date +%N`.log	# Logfile Name
 OPT=""						# OPT string for use with mysqldump ( see man mysqldump )
 BACKUPFILES=""					# thh: added for later mailing
@@ -296,22 +309,37 @@ fi
 #Clean up IO redirection
 exec 1>&6 6>&-      # Restore stdout and close file descriptor #6.
 
-if [ "$MAILCONTENT" = "files" ]
+if [ -z "$MAILGUN" ]
 then
-	#Get backup size
-	ATTSIZE=`du -c $BACKUPFILES | grep "[[:digit:][:space:]]total$" |sed s/\s*total//`
-	if [ $MAXATTSIZE -ge $ATTSIZE ]
-	then
-		BACKUPFILES=`echo "$BACKUPFILES" | sed -e "s# # -a #g"`	#enable multiple attachments
-		mutt -s "RethinkDB Backup Log and SQL Files for $DBHOST - $DATE" $BACKUPFILES $MAILADDR < $LOGFILE		#send via mutt
-	else
-		cat "$LOGFILE" | mail -s "WARNING! - RethinkDB Backup exceeds set maximum attachment size on $HOST - $DATE" $MAILADDR
-	fi
-elif [ "$MAILCONTENT" = "log" ]
-then
-	cat "$LOGFILE" | mail -s "RethinkDB Backup Log for $DBHOST - $DATE" $MAILADDR
+  if [ "$MAILCONTENT" = "files" ]
+  then
+	  #Get backup size
+	  ATTSIZE=`du -c $BACKUPFILES | grep "[[:digit:][:space:]]total$" |sed s/\s*total//`
+	  if [ $MAXATTSIZE -ge $ATTSIZE ]
+	  then
+		  BACKUPFILES=`echo "$BACKUPFILES" | sed -e "s# # -a #g"`	#enable multiple attachments
+		  mutt -s "RethinkDB Backup Log and SQL Files for $DBHOST - $DATE" $BACKUPFILES $MAILADDR < $LOGFILE		#send via mutt
+	  else
+		  cat "$LOGFILE" | mail -s "WARNING! - RethinkDB Backup exceeds set maximum attachment size on $HOST - $DATE" $MAILADDR
+	  fi
+    elif [ "$MAILCONTENT" = "log" ]
+    then
+	    cat "$LOGFILE" | mail -s "RethinkDB Backup Log for $DBHOST - $DATE" $MAILADDR
+    else
+	    cat "$LOGFILE"
+    fi
+elif [ "$MAILGUN" = "yes" ]; then
+  if [ "$MAILCONTENT" != "log" ]
+  then
+    echo "MAILCONTENT needs to be set to log if mailgun is used. Emails will not be sent"
+  else
+    curl -s --user "api:${MAILGUNAPIKEY}" https://api.mailgun.net/v3/${MAILGUNDOMAIN}/messages \
+    -F from="backups <${FROMMAILADDR}>" \
+    -F to=${MAILADDR} \
+    -F subject="Backup of ${HOST} - ${DATE}" \
+    -F text="$LOGFILE"
 else
-	cat "$LOGFILE"
+  echo "MAILGUN not empty and not set to yes. Emails will not be sent."
 fi
 
 # Clean up Logfile
