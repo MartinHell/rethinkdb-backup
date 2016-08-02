@@ -197,7 +197,7 @@ exec > $LOGFILE     # stdout replaced with file $LOGFILE.
 
 # Database dump function
 dbdump () {
-rethinkdb dump -c ${DBHOST}:${DBPORT} --password-file $PASSWORDFILE -f $1
+rethinkdb-dump -c ${DBHOST}:${DBPORT} --password-file $PASSWORDFILE -f $1
 return 0
 }
 
