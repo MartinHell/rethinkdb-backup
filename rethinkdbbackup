@@ -192,12 +192,18 @@ exec 6>&1           # Link file descriptor #6 with stdout.
                     # Saves stdout.
 exec > $LOGFILE     # stdout replaced with file $LOGFILE.
 
+if [ -f "$PASSWORDFILE" ];
+  then
+  PASS="--password-file $PASSWORDFILE"
+  else
+  PASS=""
+fi
 
 # Functions
 
 # Database dump function
 dbdump () {
-rethinkdb-dump -c ${DBHOST}:${DBPORT} --password-file $PASSWORDFILE -f $1
+rethinkdb-dump -c ${DBHOST}:${DBPORT} $PASS -f $1
 return 0
 }
 
