@@ -60,11 +60,13 @@ MAILADDR="root@localhost"
 FROMMAILADDR=""
 
 # Use MailGun for sending emails https://mailgun.com
-MAILGUN=yes
+MAILGUN=""
 
 # Set MailGun API KEY
 MAILGUNAPIKEY=""
 
+# Mailgun Domain. Set the mailgun domain for your account
+MAILGUNDOMAIN=""
 
 # ============================================================
 # === ADVANCED OPTIONS ( Read the doc's below for details )===
@@ -336,8 +338,9 @@ elif [ "$MAILGUN" = "yes" ]; then
     curl -s --user "api:${MAILGUNAPIKEY}" https://api.mailgun.net/v3/${MAILGUNDOMAIN}/messages \
     -F from="backups <${FROMMAILADDR}>" \
     -F to=${MAILADDR} \
-    -F subject="Backup of ${HOST} - ${DATE}" \
-    -F text="$LOGFILE"
+    -F subject="Backup of ${DBHOST} - ${DATE}" \
+    -F text="$(cat $LOGFILE)"
+  fi
 else
   echo "MAILGUN not empty and not set to yes. Emails will not be sent."
 fi
