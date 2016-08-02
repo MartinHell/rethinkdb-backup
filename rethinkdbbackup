@@ -35,13 +35,13 @@
 USERNAME=
 
 # Password File used for the admin user.
-PASSWORDFILE="/root/.rethinkpass"
+PASSWORDFILE="/root/.rethinkpass.txt"
 
 # Host name (or IP address) of RethinkDB server e.g localhost
 DBHOST=localhost
 
-# List of DBNAMES for Daily/Weekly Backup e.g. "DB1 DB2 DB3"
-DBNAMES="all"
+# Port used for client connections
+DBPORT=28015
 
 # Backup directory location e.g /backups
 BACKUPDIR="/backups/rethinkdb"
@@ -123,7 +123,7 @@ exec > $LOGFILE     # stdout replaced with file $LOGFILE.
 
 # Database dump function
 dbdump () {
-rethinkdb dump -c $HOST --password-file $PASSWORDFILE -f $1
+rethinkdb dump -c ${DBHOST}:${DBPORT} --password-file $PASSWORDFILE -f $1
 return 0
 }
 
