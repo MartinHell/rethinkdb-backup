@@ -31,9 +31,6 @@
 # (Detailed instructions below variables)
 #=====================================================================
 
-# Username to access the RethinkDB server e.g. dbuser
-USERNAME=
-
 # Password File used for the admin user.
 PASSWORDFILE="/root/.rethinkpass.txt"
 
@@ -72,6 +69,83 @@ DOWEEKLY=6
 # Command run after backups (uncomment to use)
 #POSTBACKUP="bash /home/backups/scripts/ftp_pgsql"
 
+#=====================================================================
+# Options documentation
+#=====================================================================
+# Set PASSWORDFILE to a cleartext file containing the password for the admin
+# user. The file needs to be manually created before running the script
+#
+# Set the DBHOST option to the server you wish to backup, leave the
+# default to backup "this server".(to backup multiple servers make
+# copies of this file and set the options for that server)
+#
+# You can change the backup storage location from /backups to anything
+# you like by using the BACKUPDIR setting..
+#
+# The MAILCONTENT and MAILADDR options are pretty self explanatory, use
+# these to have the backup log mailed to you at any email address or multiple
+# email addresses in a space seperated list.
+# (If you set mail content to "log" you will require access to the "mail" program
+# on your server. If you set this to "files" you will have to have mutt installed
+# on your server. If you set it to stdout it will log to the screen if run from
+# the console or to the cron job owner if run through cron)
+#
+# MAXATTSIZE sets the largest allowed email attachments total (all backup files) you
+# want the script to send. This is the size before it is encoded to be sent as an email
+# so if your mail server will allow a maximum mail size of 5MB I would suggest setting
+# MAXATTSIZE to be 25% smaller than that so a setting of 4000 would probably be fine.
+#
+# Finally copy rethinkdbbackup to anywhere on your server and make sure
+# to set executable permission. You can also copy the script to
+# /etc/cron.daily to have it execute automatically every night or simply
+# place a symlink in /etc/cron.daily to the file if you wish to keep it
+# somewhere else.
+#
+# Thats it..
+#
+#
+# === Advanced options doc's ===
+#
+# To set the day of the week that you would like the weekly backup to happen
+# set the DOWEEKLY setting, this can be a value from 1 to 7 where 1 is Monday,
+# The default is 6 which means that weekly backups are done on a Saturday.
+#
+# Use PREBACKUP and POSTBACKUP to specify Per and Post backup commands
+# or scripts to perform tasks either before or after the backup process.
+#
+#
+#=====================================================================
+# Backup Rotation..
+#=====================================================================
+#
+# Daily Backups are rotated weekly..
+# Weekly Backups are run by default on Saturday Morning when
+# cron.daily scripts are run...Can be changed with DOWEEKLY setting..
+# Weekly Backups are rotated on a 5 week cycle..
+# Monthly Backups are run on the 1st of the month..
+# Monthly Backups are NOT rotated automatically...
+# It may be a good idea to copy Monthly backups offline or to another
+# server..
+#
+#=====================================================================
+# Please Note!!
+#=====================================================================
+#
+# I take no resposibility for any data loss or corruption when using
+# this script..
+# This script will not help in the event of a hard drive crash. If a
+# copy of the backup has not be stored offline or on another PC..
+# You should copy your backups offline regularly for best protection.
+#
+# Happy backing up...
+#
+#=====================================================================
+# Change Log
+#=====================================================================
+#
+# VER 1.0 - (2016-08-02)
+# Initial Release - based on Autopgsqlbackup 1.0
+#
 #=====================================================================
 #=====================================================================
 #
